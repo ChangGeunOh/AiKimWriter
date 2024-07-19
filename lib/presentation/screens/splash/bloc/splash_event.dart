@@ -1,0 +1,4 @@
+enum SplashEvent {
+  init,
+  nextScreen,
+}
