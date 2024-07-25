@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:aikimwriter/domain/model/story/list_item_data.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 import '../../../common/utils/convert.dart';
 

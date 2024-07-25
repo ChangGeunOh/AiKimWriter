@@ -20,13 +20,15 @@ const labels = [
 ];
 
 class StoryIndicator extends StatelessWidget {
+  final List<int> doneStepList;
   final int step;
   final Function(int) onTapStep;
 
   const StoryIndicator({
     super.key,
-    this.step = 8,
+    required this.doneStepList,
     required this.onTapStep,
+    this.step = 8,
   });
 
   @override
@@ -47,11 +49,9 @@ class StoryIndicator extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: labels.mapIndexed((index, e) {
-            final type = index < (step - 1)
-                ? IndicatorType.done
-                : index == (step - 1)
-                    ? IndicatorType.active
-                    : IndicatorType.deActive;
+
+            final isDone = doneStepList.contains(index + 1);
+            final type = isDone ? IndicatorType.done : index == step - 1 ? IndicatorType.active : IndicatorType.deActive;
 
             return GestureDetector(
               onTap: () {

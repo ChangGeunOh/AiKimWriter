@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/model/gallery/image_data.dart';
+import '../../../../domain/model/gallery/photo_data.dart';
 
 
 class ImageGridView extends StatefulWidget {
-  final List<ImageData> imageDataList;
-  final List<ImageData> selectedList;
-  final Function(ImageData) onTap;
+  final List<PhotoData> imageDataList;
+  final List<PhotoData> selectedList;
+  final Function(PhotoData) onTap;
   final VoidCallback onNextPage;
 
   const ImageGridView({
@@ -72,7 +73,7 @@ class _ImageGridViewState extends State<ImageGridView> {
 
 class ImageGridItem extends StatelessWidget {
   final int index;
-  final ImageData imageData;
+  final PhotoData imageData;
 
   const ImageGridItem({
     super.key,

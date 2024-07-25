@@ -1,12 +1,18 @@
+import 'package:aikimwriter/common/const/const.dart';
+import 'package:aikimwriter/common/utils/extension.dart';
+import 'package:aikimwriter/common/utils/pdf_maker.dart';
 import 'package:aikimwriter/domain/model/story/step_7_data.dart';
+import 'package:aikimwriter/presentation/screens/story/bloc/story_state.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:intl/intl.dart';
+import 'package:pdfx/pdfx.dart';
 
 import '../../../../domain/model/story/story_label_data.dart';
 import '../widget/story_title.dart';
 
 class StoryPage07 extends StatefulWidget {
+  final StoryState state;
   final Step7Data step7data;
   final StoryLabelData storyLabelData;
   final Function(Step7Data) onChanged;
@@ -14,6 +20,7 @@ class StoryPage07 extends StatefulWidget {
 
   const StoryPage07({
     super.key,
+    required this.state,
     required this.step7data,
     required this.storyLabelData,
     required this.onChanged,
@@ -27,20 +34,13 @@ class StoryPage07 extends StatefulWidget {
 class _StoryPage01State extends State<StoryPage07> {
   late Step7Data _step7data;
   final ScrollController _scrollController = ScrollController();
-  bool _isDone = false;
+  PdfData? _pdfData;
 
   @override
   void initState() {
     _step7data = widget.step7data;
+    _makePdf();
     super.initState();
-  }
-
-  void _scrollToBottom() {
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 1000),
-      curve: Curves.easeOut,
-    );
   }
 
   @override
@@ -60,15 +60,12 @@ class _StoryPage01State extends State<StoryPage07> {
             description: widget.storyLabelData.description,
           ),
           Expanded(
-            child: Center(
-              child: ImagePagerView(
-                step7data: _step7data,
-                isDone: _isDone,
-                onEnd: (){
-                  _isDone = true;
-                  widget.onChanged(_step7data);
-                  setState(() {});
-                },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Center(
+                child: _pdfData == null
+                    ? const CircularProgressIndicator()
+                    : StoryPdfView(pdfPath: _pdfData!.pdfPath),
               ),
             ),
           ),
@@ -80,10 +77,11 @@ class _StoryPage01State extends State<StoryPage07> {
               bottom: 8.0,
             ),
             child: ElevatedButton(
-              onPressed: _isDone ? (){
-                widget.onChanged(_step7data);
-                widget.onTapDone();
-              }: null,
+              onPressed: _pdfData != null
+                  ? () {
+                      widget.onTapDone();
+                    }
+                  : null,
               child: const Text('책장에 보관할 께요.'),
             ),
           ),
@@ -91,123 +89,130 @@ class _StoryPage01State extends State<StoryPage07> {
       ),
     );
   }
+
+  Future<void> _makePdf() async {
+    final storyList = widget.state.step5Data.story.split('\n\n');
+    final List<Paragraph> paragraphs = [];
+
+    for (final story in storyList) {
+
+      final splitText = story.split('\n');
+      final description = splitText.sublist(1).join('\n');
+
+      final firstLine = splitText.first.split('-');
+      final dateString = firstLine.first.split('(').first.trim();
+      DateFormat dateFormat = DateFormat('yyyy년 M월 d일');
+
+      final date = dateFormat.parse(dateString);
+      final subject = firstLine.last;
+
+      paragraphs.add(Paragraph(
+        text: description,
+        date: dateString.trim(),
+        subject: subject,
+      ));
+    }
+
+    final paragraphList = widget.state.imageDataList.map((e) {
+      final date = e.dateTime.toDateString(format: 'yyyy년 M월 d일');
+      final paragraph = paragraphs.firstWhereOrNull((element) => element.date!.contains(date));
+      if (paragraph != null) {
+        return paragraph.copyWith(
+          image: e.thumbData!,
+          imagePath: e.originalPath,
+        );
+      }
+
+      return Paragraph(
+        date: e.dateTime.toDateString(format: 'yyyy년 M월 d일 (E)'),
+        text: paragraphs.last.text,
+        image: e.thumbData!,
+        imagePath: e.originalPath,
+      );
+    }).toList();
+
+    paragraphList.sort((a, b) => a.date!.compareTo(b.date!));
+    final lastParagraphs = paragraphList.mapIndexed((index, element) {
+      if (index == 0) return element;
+      final beforeElement = paragraphList[index - 1];
+      if (element.date == beforeElement.date) {
+            return element.copyWith(subject: '', date: '');
+      }
+      return element;
+    }).toList();
+
+    final pdf = await PdfMaker.create(
+      title: widget.state.step4Data.title,
+      coverImage: widget.state.step3Data.imageData!.thumbData!,
+      coverImagePath: widget.state.step3Data.imageData!.originalPath,
+      paragraphs: lastParagraphs,
+      author: '박시현',
+      travelPlace: widget.state.step3Data.travelPlace,
+      term: widget.state.step3Data.dateTimeRange?.toDateRangeString() ?? '20024//02/11 ~ 02/13',
+    );
+
+    _pdfData = await pdf.makePdfFile();
+    final step7data = Step7Data(
+      filePath: _pdfData!.pdfPath,
+      coverImage: _pdfData!.coverImagePath,
+    );
+    widget.onChanged(step7data);
+    setState(() {});
+  }
 }
 
-class ImagePagerView extends StatefulWidget {
-  final Step7Data step7data;
-  final VoidCallback onEnd;
-  final bool isDone;
+class StoryPdfView extends StatefulWidget {
+  final String pdfPath;
 
-  const ImagePagerView({
+  const StoryPdfView({
     super.key,
-    required this.isDone,
-    required this.step7data,
-    required this.onEnd,
+    required this.pdfPath,
   });
 
   @override
-  State<ImagePagerView> createState() => _ImagePagerViewState();
+  State<StoryPdfView> createState() => _StoryPdfViewState();
 }
 
-class _ImagePagerViewState extends State<ImagePagerView> {
-  final PageController _pageController = PageController();
+class _StoryPdfViewState extends State<StoryPdfView> {
+  late PdfController _pdfController;
+  int _page = 0;
 
   @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+  void initState() {
+    _pdfController =
+        PdfController(document: PdfDocument.openFile(widget.pdfPath));
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final imageList = [
-      widget.step7data.coverImage,
-      ...widget.step7data.innerImageList
-    ];
-    final imageWidgetList = imageList
-        .mapIndexed(
-          (index, image) {
-            if (index == 0 && !widget.isDone) {
-              return CoverImageView(
-                imagePath: image,
-                onEnd: widget.onEnd,
-              );
-            } else {
-              return Image.asset(
-                image,
-              );
-            }
-          },
-        )
-        .toList();
     return Stack(
       children: [
-        PageView(
-          controller: _pageController,
-          children: imageWidgetList,
+        PdfView(
+          controller: _pdfController,
+          onPageChanged: (page) {
+            _page = page;
+            setState(() {});
+          },
         ),
         Positioned(
           bottom: 8,
           right: 0,
           left: 0,
           child: Center(
-            child: SmoothPageIndicator(
-              controller: _pageController,
-              count: widget.isDone ? imageList.length : 1,
-              effect: WormEffect(
-                dotColor: Colors.grey[300]!,
-                activeDotColor: Colors.grey,
-                dotHeight: 6,
-                spacing: 4,
-                dotWidth: 6,
+            child: PdfPageNumber(
+              controller: _pdfController,
+              builder: (_, state, loadingState, pagesCount) => Container(
+                alignment: Alignment.center,
+                child: Text(
+                  '$_page/${pagesCount ?? 0}',
+                  style: const TextStyle(fontSize: 14),
+                ),
               ),
             ),
           ),
         ),
       ],
-    );
-  }
-}
-
-class CoverImageView extends StatefulWidget {
-  final String imagePath;
-  final VoidCallback onEnd;
-
-  const CoverImageView({
-    super.key,
-    required this.imagePath,
-    required this.onEnd,
-  });
-
-  @override
-  State<CoverImageView> createState() => _CoverImageViewState();
-}
-
-class _CoverImageViewState extends State<CoverImageView> {
-  double _opacity = 0.0;
-
-  @override
-  void initState() {
-    _fadeIn();
-    super.initState();
-  }
-
-  void _fadeIn() async {
-    await Future.delayed(const Duration(milliseconds: 1000)); // Optional delay
-    setState(() {
-      _opacity = 1.0;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedOpacity(
-      opacity: _opacity,
-      duration: const Duration(seconds: 3),
-      onEnd: widget.onEnd,
-      child: Image.asset(
-        widget.imagePath, // Replace with your image URL or asset
-      ),
     );
   }
 }

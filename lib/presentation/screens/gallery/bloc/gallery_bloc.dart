@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:aikimwriter/common/const/const.dart';
 import 'package:aikimwriter/domain/model/gallery/album_data.dart';
@@ -9,6 +10,7 @@ import 'package:photo_manager/photo_manager.dart';
 import '../../../../domain/bloc/bloc_bloc.dart';
 import '../../../../domain/bloc/bloc_event.dart';
 import '../../../../domain/model/gallery/image_data.dart';
+import '../../../../domain/model/gallery/photo_data.dart';
 import 'gallery_event.dart';
 import 'gallery_state.dart';
 
@@ -41,16 +43,13 @@ class GalleryBloc extends BlocBloc<BlocEvent<GalleryEvent>, GalleryState> {
       case GalleryEvent.onLoadingImages:
         final page = event.extra as int;
         emit(state.copyWith(isLoading: true, page: page));
-        print('page: $page');
-        final images = await usesCases.galleryCase.getImageDataList(
-          assetPath: state.albumData!.assetPath,
-          page: page,
-        );
-        final imageList = List.of(state.imageDataList);
-        imageList.addAll(images);
+        final photos =
+            await _getPhotoDataList(state.albumData!.assetPath, page);
+        final photoDataList = List.of(state.photoDataList);
+        photoDataList.addAll(photos);
         emit(state.copyWith(
           isLoading: false,
-          imageDataList: imageList,
+          photoDataList: photoDataList,
           page: page,
         ));
         isLoading = false;
@@ -62,13 +61,13 @@ class GalleryBloc extends BlocBloc<BlocEvent<GalleryEvent>, GalleryState> {
         emit(state.copyWith(
           albumData: event.extra as AlbumData,
           isShowAlbums: false,
-          imageDataList: [],
+          photoDataList: [],
         ));
         add(BlocEvent(GalleryEvent.onLoadingImages, extra: 0));
         break;
       case GalleryEvent.onSelectImages:
         emit(state.copyWith(
-          selectedImageDataList: event.extra as List<ImageData>,
+          selectedPhotoDataList: event.extra as List<PhotoData>,
         ));
         break;
       case GalleryEvent.onNextPage:
@@ -79,19 +78,42 @@ class GalleryBloc extends BlocBloc<BlocEvent<GalleryEvent>, GalleryState> {
         }
         break;
       case GalleryEvent.onTapImage:
-        final imageData = event.extra as ImageData;
-        final selectedList = List.of(state.selectedImageDataList);
+        final imageData = event.extra as PhotoData;
+        final selectedList = List.of(state.selectedPhotoDataList);
         if (selectedList.contains(imageData)) {
           selectedList.remove(imageData);
         } else {
           selectedList.add(imageData);
         }
-        emit(state.copyWith(selectedImageDataList: selectedList));
+        emit(state.copyWith(selectedPhotoDataList: selectedList));
         break;
       case GalleryEvent.onTapSelect:
-        context.pop(state.selectedImageDataList);
+        context.pop(state.selectedPhotoDataList);
         break;
     }
+  }
+
+  Future<List<PhotoData>> _getPhotoDataList(AssetPathEntity path, page) async {
+
+    final assets = await path.getAssetListRange(
+      start: page * 100,
+      end: page * 100 + 100,
+    );
+
+    final List<PhotoData> photoDataList = [];
+    for (AssetEntity asset in assets) {
+      final Uint8List? thumbnailData = await asset.thumbnailData;
+      final photoData = PhotoData(
+        thumbData: thumbnailData!,
+        assetEntity: asset,
+        hasLocation: asset.latitude != null &&
+            asset.longitude != null &&
+            asset.latitude! != 0 &&
+            asset.longitude! != 0,
+      );
+      photoDataList.add(photoData);
+    }
+    return photoDataList;
   }
 
   Future<bool> _requestPermission() async {

@@ -1,7 +1,12 @@
+import 'dart:io';
+
+import 'package:aikimwriter/domain/model/gallery/photo_data.dart';
 import 'package:collection/collection.dart';
+import 'package:exif/exif.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../domain/model/gallery/image_data.dart';
 import '../../../../domain/model/story/story_label_data.dart';
@@ -15,11 +20,13 @@ import '../widget/story_title.dart';
 class StoryPage02 extends StatefulWidget {
   final StoryLabelData storyLabelData;
   final Function(List<ImageData>) onImageList;
+  final List<ImageData> imageList;
 
   const StoryPage02({
     super.key,
     required this.storyLabelData,
     required this.onImageList,
+    required this.imageList,
   });
 
   @override
@@ -37,6 +44,12 @@ class _StoryPage02State extends State<StoryPage02> {
       duration: const Duration(milliseconds: 500),
       curve: Curves.easeOut,
     );
+  }
+
+  @override
+  void initState() {
+    _imageDataList.addAll(widget.imageList);
+    super.initState();
   }
 
   @override
@@ -69,10 +82,10 @@ class _StoryPage02State extends State<StoryPage02> {
                                 mainAxisSpacing: 16,
                                 childAspectRatio: 0.76),
                         delegate: SliverChildBuilderDelegate(
-                          (context, index) {
+                          (sliverContext, index) {
                             if (index == 0) {
                               return StoryImageAddItem(onTap: () async {
-                                _showGallery(context);
+                                _showGallery();
                               });
                             }
                             final imageData = _imageDataList[index - 1];
@@ -125,33 +138,54 @@ class _StoryPage02State extends State<StoryPage02> {
     // bloc.add(BlocEvent(StoryEvent.onUpdateImage, result));
   }
 
-  void _showGallery(t) async {
-    final imageList = await context.pushNamed(GalleryScreen.routeName);
-    if (imageList != null) {
-      final list = imageList as List<ImageData>;
-      for (var imageData in list) {
-        final notContain = _imageDataList.every((e) => e.id != imageData.id);
+  void _showGallery() async {
+    final List<PhotoData>? result =
+        await context.pushNamed(GalleryScreen.routeName);
+    if (result != null) {
+      for (final photoData in result) {
+        final notContain =
+            _imageDataList.every((e) => e.id != photoData.assetEntity.id);
         if (notContain) {
+          final originalFile = await photoData.assetEntity.originFile;
+          final originalPath = originalFile?.path ?? '';
+          final imageData = ImageData(
+            id: photoData.assetEntity.id,
+            thumbData: photoData.thumbData,
+            dateTime: photoData.assetEntity.createDateTime,
+            latitude: photoData.assetEntity.latitude,
+            longitude: photoData.assetEntity.longitude,
+            originalPath: originalPath,
+          );
           _imageDataList.add(imageData);
-          if (imageData.hasLocation) {
-            _fetchAddress(imageData);
-          }
+          _fetchAddress(imageData);
         }
       }
+      setState(() {});
+      _scrollToBottom();
     }
-    setState(() {});
-    _scrollToBottom();
   }
 
   void _fetchAddress(ImageData imageData) async {
     final useCases = context.read<UseCases>();
+    DateTime? dateTime;
+    if (imageData.originalPath.isNotEmpty) {
+      final data = await readExifFromFile(File(imageData.originalPath));
+      if (data.containsKey('EXIF DateTimeOriginal') ||
+          data.containsKey('Image DateTime')) {
+        final date = data.containsKey('EXIF DateTimeOriginal')
+            ? data['EXIF DateTimeOriginal']
+            : data['Image DateTime'];
+        dateTime = DateFormat('yyyy:MM:dd HH:mm:ss').parse(date.toString());
+      }
+    }
     final address = await useCases.galleryCase.getAddress(
       imageId: imageData.id,
       latitude: imageData.latitude,
       longitude: imageData.longitude,
     );
     final index = _imageDataList.indexOf(imageData);
-    _imageDataList[index] = imageData.copyWith(address: address);
+    _imageDataList[index] =
+        imageData.copyWith(address: address, dateTime: dateTime);
     setState(() {});
   }
 }

@@ -45,6 +45,7 @@ class StoryScreen extends StatelessWidget {
                   horizontal: 16.0,
                 ),
                 child: StoryIndicator(
+                    doneStepList: state.doneStepList,
                     step: state.step,
                     onTapStep: (step) {
                       bloc.add(BlocEvent(StoryEvent.onTapStep, extra: step));
@@ -68,6 +69,7 @@ class StoryScreen extends StatelessWidget {
                         bloc.add(BlocEvent(StoryEvent.onImageList,
                             extra: imageList));
                       },
+                      imageList: state.imageDataList,
                     ),
                     StoryPage03(
                       step3data: state.step3Data,
@@ -103,6 +105,7 @@ class StoryScreen extends StatelessWidget {
                       },
                     ),
                     StoryPage07(
+                      state: state,
                       step7data: state.step7Data,
                       storyLabelData: storyLabelDataList[6],
                       onChanged: (travelType) {

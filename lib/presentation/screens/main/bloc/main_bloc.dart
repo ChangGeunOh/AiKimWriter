@@ -32,12 +32,19 @@ class MainBloc extends BlocBloc<BlocEvent<MainEvent>, MainState> {
       case MainEvent.init:
         final permission = await PhotoManager.requestPermissionExtend();
         _processPermission(permission);
+        final list = await usesCases.storyCase.loadStoryDataList();
+        emit(state.copyWith(
+          storyDataList: list,
+        ));
         break;
       case MainEvent.onAddStory:
         final result = await context.pushNamed(StoryScreen.routeName);
-        final storyData = result as StoryData;
-        final list = [...state.storyDataList, storyData];
-        emit(state.copyWith(storyDataList: list));
+        if (result != null) {
+          final storyData = result as StoryData;
+          usesCases.storyCase.saveStoryData(storyData);
+          final list = [...state.storyDataList, storyData];
+          emit(state.copyWith(storyDataList: list));
+        }
         break;
       case MainEvent.onPassword:
         context.pushNamed(UnderScreen.routeName);
@@ -58,12 +65,32 @@ class MainBloc extends BlocBloc<BlocEvent<MainEvent>, MainState> {
         context.pushNamed(AppInfoScreen.routeName);
         break;
       case MainEvent.onTapStroy:
-        context.pushNamed(
+        final storyData = await context.pushNamed(
           ViewScreen.routeName,
           extra: event.extra as StoryData,
         );
+        if (storyData != null) {
+          await _removeStoryData(storyData as StoryData, emit);
+        }
+        break;
+      case MainEvent.onRemove:
+        final storyData = event.extra as StoryData;
+        await _removeStoryData(storyData, emit);
         break;
     }
+  }
+
+  Future<void> _removeStoryData(
+    StoryData storyData,
+    Emitter<MainState> emit,
+  ) async {
+    print('remove: ${storyData.id}');
+    print(storyData.toJson());
+    await usesCases.storyCase.removeStoryData(storyData);
+    final list = await usesCases.storyCase.loadStoryDataList();
+    emit(state.copyWith(
+      storyDataList: list,
+    ));
   }
 
   void _processPermission(PermissionState permission) {

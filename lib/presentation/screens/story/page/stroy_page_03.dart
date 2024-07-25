@@ -65,27 +65,33 @@ class _StoryPage01State extends State<StoryPage03> {
             description: widget.storyLabelData.description,
           ),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ListView.separated(
-                controller: _scrollController,
-                itemBuilder: (context, index) {
-                  return _buildWidget(
-                    index: index,
-                    step3data: _step3data,
-                    onChanged: (data) {
-                      _step3data = data;
-                      setState(() {});
-                    },
-                    onTapNext: () {
-                      widget.onChanged(_step3data);
-                    },
-                  );
-                },
-                separatorBuilder: (context, index) {
-                  return const SizedBox(height: 24);
-                },
-                itemCount: 5,
+            child: GestureDetector(
+              onTap: (){
+                FocusScope.of(context).unfocus();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: ListView.separated(
+                  controller: _scrollController,
+                  itemBuilder: (context, index) {
+                    return _buildWidget(
+                      index: index,
+                      step3data: _step3data,
+                      onChanged: (data) {
+                        _step3data = data;
+                        setState(() {});
+                      },
+                      onTapNext: () {
+                        FocusScope.of(context).unfocus();
+                        widget.onChanged(_step3data);
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(height: 24);
+                  },
+                  itemCount: 5,
+                ),
               ),
             ),
           ),
@@ -103,6 +109,7 @@ class _StoryPage01State extends State<StoryPage03> {
     switch (index) {
       case 0:
         return CustomTextField(
+          text: step3data.travelPlace,
           onChanged: (value) {
             onChanged(step3data.copyWith(location: value));
           },
@@ -120,6 +127,7 @@ class _StoryPage01State extends State<StoryPage03> {
         );
       case 2:
         return ImageListView(
+          imageData: step3data.imageData,
           imageDataList: widget.imageDataList,
           title: '대표사진',
           onTapImageData: (imageData) {

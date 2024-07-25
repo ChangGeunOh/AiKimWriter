@@ -1,3 +1,4 @@
+import 'package:aikimwriter/domain/model/gallery/photo_data.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../domain/model/gallery/image_data.dart';
@@ -5,9 +6,9 @@ import 'image_grid_view.dart';
 import 'selected_image_view.dart';
 
 class ImageListView extends StatelessWidget {
-  final List<ImageData> imageDataList;
-  final List<ImageData> selectedImageList;
-  final Function(ImageData) onTap;
+  final List<PhotoData> imageDataList;
+  final List<PhotoData> selectedImageList;
+  final Function(PhotoData) onTap;
   final VoidCallback onNextPage;
 
   const ImageListView({

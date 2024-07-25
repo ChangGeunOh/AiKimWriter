@@ -61,17 +61,22 @@ class _StoryPage01State extends State<StoryPage05> {
             description: widget.storyLabelData.description,
           ),
            Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: TextField(
-                  controller: _textEditingController,
-                  maxLines: null,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
+            child: GestureDetector(
+              onTap: (){
+                FocusScope.of(context).unfocus();
+              },
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: TextField(
+                    controller: _textEditingController,
+                    maxLines: null,
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      contentPadding: EdgeInsets.zero,
+                    ),
                   ),
                 ),
               ),
@@ -86,6 +91,7 @@ class _StoryPage01State extends State<StoryPage05> {
             ),
             child: ElevatedButton(
               onPressed: () {
+                FocusScope.of(context).unfocus();
                 widget.onChanged(
                   _step5data.copyWith(
                     story: _textEditingController.text,

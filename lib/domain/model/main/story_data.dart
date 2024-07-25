@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
+import '../../../common/utils/convert.dart';
 import '../gallery/image_data.dart';
 
+part 'story_data.g.dart';
+
+@JsonSerializable()
 class StoryData {
   final int? id;
   final String travelType;
   final String travelPlace;
+  @JsonKey(
+    fromJson: Convert.mapToDateTimeRange,
+    toJson: Convert.dateTimeRangeToMap,
+  )
   final DateTimeRange travelDate;
   final String travelReview;
   final List<ImageData> imageDataList;
@@ -22,7 +31,9 @@ class StoryData {
   final String coverStyle;
   final String innerStyle;
 
-  final List<String> bookPageList;
+  final String pdfPath;
+  final String coverImagePath;
+
   final DateTime regDate;
 
   StoryData({
@@ -42,7 +53,8 @@ class StoryData {
     required this.story,
     required this.coverStyle,
     required this.innerStyle,
-    required this.bookPageList,
+    required this.pdfPath,
+    required this.coverImagePath,
     DateTime? regDate,
   }) : regDate = regDate ?? DateTime.now();
 
@@ -65,6 +77,8 @@ class StoryData {
     String? innerStyle,
     List<String>? bookPageList,
     DateTime? regDate,
+    String? pdfPath,
+    String? coverImagePath,
   }) {
     return StoryData(
       id: id ?? this.id,
@@ -83,10 +97,12 @@ class StoryData {
       story: story ?? this.story,
       coverStyle: coverStyle ?? this.coverStyle,
       innerStyle: innerStyle ?? this.innerStyle,
-      bookPageList: bookPageList ?? this.bookPageList,
       regDate: regDate ?? this.regDate,
+      pdfPath: pdfPath ?? this.pdfPath,
+      coverImagePath: coverImagePath ?? this.coverImagePath,
     );
   }
+
+  factory StoryData.fromJson(Map<String, dynamic> json) => _$StoryDataFromJson(json);
+  Map<String, dynamic> toJson() => _$StoryDataToJson(this);
 }
-
-

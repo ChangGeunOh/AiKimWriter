@@ -5,10 +5,12 @@ import '../../../../domain/model/gallery/image_data.dart';
 class ImageListView extends StatefulWidget {
   final String title;
   final List<ImageData> imageDataList;
+  final ImageData? imageData;
   final Function(ImageData) onTapImageData;
 
   const ImageListView({
     super.key,
+    this.imageData,
     required this.imageDataList,
     required this.title,
     required this.onTapImageData,
@@ -20,6 +22,12 @@ class ImageListView extends StatefulWidget {
 
 class _ImageListViewState extends State<ImageListView> {
   ImageData? _imageData;
+
+  @override
+  void initState() {
+    _imageData = widget.imageData;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {

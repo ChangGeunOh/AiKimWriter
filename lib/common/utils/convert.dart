@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 
@@ -95,7 +96,19 @@ class Convert {
     }
   }
 
+  static Map<String, dynamic> dateTimeRangeToMap(DateTimeRange value) {
+    return {
+      'start': dateTimeToInt(value.start),
+      'end': dateTimeToInt(value.end),
+    };
+  }
 
+  static DateTimeRange mapToDateTimeRange(Map<String, dynamic> value) {
+    return DateTimeRange(
+      start: intToDateTime(value['start']),
+      end: intToDateTime(value['end']),
+    );
+  }
 
 
 }

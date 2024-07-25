@@ -2,13 +2,13 @@ import 'package:aikimwriter/domain/model/gallery/image_data.dart';
 import 'package:flutter/material.dart';
 
 class Step3Data {
-  final String location;
+  final String travelPlace;
   final DateTimeRange? dateTimeRange;
   final ImageData? imageData;
   final String memo;
 
   Step3Data({
-    this.location = '',
+    this.travelPlace = '',
     this.dateTimeRange,
     this.imageData,
     this.memo = '',
@@ -21,13 +21,13 @@ class Step3Data {
     ImageData? imageData,
   }) {
     return Step3Data(
-      location: location ?? this.location,
+      travelPlace: location ?? this.travelPlace,
       dateTimeRange: dateTimeRange ?? this.dateTimeRange,
       memo: memo ?? this.memo,
       imageData: imageData ?? this.imageData,
     );
   }
 
-  bool get isFilled => location.isNotEmpty && dateTimeRange != null && imageData != null;
-  String get filledData => 'location: $location, dateTimeRange: $dateTimeRange, memo: $memo, imageData: $imageData';
+  bool get isFilled => travelPlace.isNotEmpty && dateTimeRange != null && imageData != null;
+  String get filledData => 'location: $travelPlace, dateTimeRange: $dateTimeRange, memo: $memo, imageData: $imageData';
 }

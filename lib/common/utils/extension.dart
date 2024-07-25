@@ -39,4 +39,27 @@ extension DateTimeRangeString on DateTimeRange {
   String toDateString({String? format = 'yyyy/MM/dd'}) {
     return '${start.toDateString(format: format)} - ${end.toDateString(format: format)}';
   }
+
+  String toNightDays() {
+    final days = end.difference(start).inDays;
+    return days == 0 ? '0/1' : '$days/${days + 1}';
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      'start': start.millisecondsSinceEpoch ~/ 1000,
+      'end': end.millisecondsSinceEpoch ~/ 1000,
+    };
+  }
+
+  String toDateRangeString() {
+    return '${start.toDateString(format: 'yyyy/MM/dd')} ~ ${end.toDateString(format: 'MM/dd')}';
+  }
+
+  static DateTimeRange from(Map<String, dynamic> value) {
+    return DateTimeRange(
+      start: DateTime.fromMillisecondsSinceEpoch(value['start'] * 1000),
+      end: DateTime.fromMillisecondsSinceEpoch(value['end'] * 1000),
+    );
+  }
+
 }

@@ -58,9 +58,9 @@ class GalleryScreen extends StatelessWidget {
             TextButton(
               child: Row(
                 children: [
-                  if (state.selectedImageDataList.isNotEmpty)
+                  if (state.selectedPhotoDataList.isNotEmpty)
                     Text(
-                      '${state.selectedImageDataList.length}',
+                      '${state.selectedPhotoDataList.length}',
                       style: const TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class GalleryScreen extends StatelessWidget {
                   Text(
                     '선택',
                     style: TextStyle(
-                      color: state.selectedImageDataList.isNotEmpty
+                      color: state.selectedPhotoDataList.isNotEmpty
                           ? Colors.black
                           : Colors.grey[300],
                       fontSize: 16,
@@ -94,18 +94,17 @@ class GalleryScreen extends StatelessWidget {
                 bloc.add(BlocEvent(GalleryEvent.onTapAlbum, extra: albumData));
               });
         }
-        print('state.imageDataList: ${state.imageDataList.length}');
         return Stack(
           children: [
             ImageListView(
-              imageDataList: state.imageDataList,
+              imageDataList: state.photoDataList,
               onTap: (imageData) {
                 bloc.add(BlocEvent(
                   GalleryEvent.onTapImage,
                   extra: imageData,
                 ));
               },
-              selectedImageList: state.selectedImageDataList,
+              selectedImageList: state.selectedPhotoDataList,
               onNextPage: () {
                 bloc.add(BlocEvent(
                   GalleryEvent.onNextPage,

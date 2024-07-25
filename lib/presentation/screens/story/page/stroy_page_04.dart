@@ -39,6 +39,12 @@ class _StoryPage01State extends State<StoryPage04> {
   @override
   void initState() {
     _step4data = widget.step4data;
+    if (_step4data.bookType != null) {
+      _textStyleList = textStyleMap[_step4data.bookType!.type]!;
+    }
+    if (_step4data.title.isEmpty && _step4data.titleList.isNotEmpty) {
+      _step4data = _step4data.copyWith(title: _step4data.titleList[0]);
+    }
     super.initState();
   }
 
@@ -62,70 +68,91 @@ class _StoryPage01State extends State<StoryPage04> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: ListView.separated(
-                itemBuilder: (context, index) {
-                  switch (index) {
-                    case 0:
-                      return DropdownTextField(
-                        text: _step4data.title,
-                        items: _step4data.titleList,
-                        onChanged: (value) {
-                          print('title: $value');
-                          _step4data = _step4data.copyWith(title: value);
-                          setState(() {});
-                        },
-                      );
-                    case 2:
-                      return DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(
-                          labelText: '글 스타일',
-                        ),
-                        value: _textStyleList.isEmpty ? '' : _textStyleList.first,
-                        items: _textStyleList
-                            .map((e) => DropdownMenuItem<String>(
-                                value: e, child: Text(e)))
-                            .toList(),
-                        onChanged: (value) {
-                          _step4data = _step4data.copyWith(textStyle: value);
-                          setState(() {});
-                        },
-                      );
-                    case 1:
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: ImageTextListView(
-                          title: '글 유형',
-                          onTapBookType: (booktype) {
-                            _step4data = _step4data.copyWith(bookType: booktype);
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    switch (index) {
+                      case 0:
+                        return DropdownTextField(
+                          text: _step4data.title,
+                          items: _step4data.titleList,
+                          onChanged: (value) {
+                            _step4data = _step4data.copyWith(title: value);
                             setState(() {});
-                            _textStyleList = textStyleMap[booktype.type]!;
-                            _scrollController;
                           },
-                          bookTypeList: bookTypeList,
-                        ),
-                      );
-                    case 3:
-                      return Padding(
-                        padding: const EdgeInsets.only(
-                          top: 24,
-                          left: 24.0,
-                          right: 24.0,
-                          bottom: 8.0,
-                        ),
-                        child: ElevatedButton(
-                          onPressed: _step4data.isFilled
-                              ? () => widget.onChanged(_step4data)
-                              : null,
-                          child: const Text('AI 김작가 작성글을 확인 해요.'),
-                        ),
-                      );
-                  }
-                  return const SizedBox();
-                },
-                itemCount: 4,
-                separatorBuilder: (context, index) {
-                  return const SizedBox(height: 16);
-                },
+                        );
+                      case 1:
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: ImageTextListView(
+                            title: '글 유형',
+                            bookType: _step4data.bookType,
+                            onTapBookType: (booktype) {
+                              _step4data =
+                                  _step4data.copyWith(bookType: booktype);
+                              setState(() {});
+                              _textStyleList = textStyleMap[booktype.type]!;
+                              _step4data = _step4data.copyWith(
+                                textStyle: _textStyleList[0],
+                              );
+                              _scrollToBottom();
+                            },
+                            bookTypeList: bookTypeList,
+                          ),
+                        );
+                      case 2:
+                        String text = '';
+                        if (_textStyleList.isNotEmpty) {
+                          text = _textStyleList.contains(_step4data.textStyle)
+                              ? _step4data.textStyle
+                              : _textStyleList[0];
+                          _step4data = _step4data.copyWith(textStyle: text);
+                          // setState(() {});
+                        }
+
+                        return DropdownButtonFormField<String>(
+                          decoration: const InputDecoration(
+                            labelText: '글 스타일',
+                          ),
+                          value: text,
+                          items: _textStyleList
+                              .map((e) => DropdownMenuItem<String>(
+                                  value: e, child: Text(e)))
+                              .toList(),
+                          onChanged: (value) {
+                            _step4data = _step4data.copyWith(textStyle: value);
+                            setState(() {});
+                          },
+                        );
+                      case 3:
+                        return Padding(
+                          padding: const EdgeInsets.only(
+                            top: 24,
+                            left: 24.0,
+                            right: 24.0,
+                            bottom: 8.0,
+                          ),
+                          child: ElevatedButton(
+                            onPressed: _step4data.isFilled
+                                ? () {
+                                    FocusScope.of(context).unfocus();
+                                    widget.onChanged(_step4data);
+                                  }
+                                : null,
+                            child: const Text('AI 김작가 작성글을 확인 해요.'),
+                          ),
+                        );
+                    }
+                    return const SizedBox();
+                  },
+                  itemCount: 4,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(height: 16);
+                  },
+                ),
               ),
             ),
           ),

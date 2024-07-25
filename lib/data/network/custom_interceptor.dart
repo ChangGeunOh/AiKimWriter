@@ -12,4 +12,14 @@ class CustomInterceptor extends Interceptor {
     required this.dataStoreSource,
   });
 
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    print('---------------------------------');
+    print('Request Method: ${options.method}');
+    print('Request Path: ${options.path}');
+    print('Request Headers: ${options.headers}');
+    print('Request Data: ${options.data}');
+    print('---------------------------------');
+    return handler.next(options); // continue
+  }
 }

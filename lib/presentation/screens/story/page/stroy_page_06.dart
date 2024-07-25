@@ -34,6 +34,7 @@ class _StoryPage01State extends State<StoryPage06> {
   }
   @override
   void initState() {
+
     _step6data = widget.step6data;
     super.initState();
   }
@@ -61,7 +62,7 @@ class _StoryPage01State extends State<StoryPage06> {
                 if (index == 0) {
                   return CoverListView(
                     title: '표지',
-                    coverImage: '',
+                    coverImage: _step6data.coverImage,
                     coverImageList: ['assets/images/img_book_type_01.png', 'assets/images/img_book_type_02.png'],
                     onTapCoverImage: (coverImage) {
                       _step6data = _step6data.copyWith(coverImage: coverImage);
@@ -72,7 +73,7 @@ class _StoryPage01State extends State<StoryPage06> {
                 if (index == 1) {
                   return CoverListView(
                     title: '속지',
-                    coverImage: '',
+                    coverImage: _step6data.innerImage,
                     coverImageList: ['assets/images/img_page_type_01.png', 'assets/images/img_page_type_02.png', 'assets/images/img_page_type_03.png'],
                     onTapCoverImage: (innerImage) {
                       _step6data = _step6data.copyWith(innerImage: innerImage);
@@ -88,7 +89,7 @@ class _StoryPage01State extends State<StoryPage06> {
                     bottom: 8.0,
                   ),
                   child: ElevatedButton(
-                    onPressed: _step6data.isValidate ?  () {
+                    onPressed: _step6data.isFilled ?  () {
                       widget.onChanged(_step6data);
                     } : null,
                     child: const Text('다 끝났 어요.'),

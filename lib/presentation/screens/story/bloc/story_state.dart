@@ -61,4 +61,16 @@ class StoryState extends BlocState {
       step7Data: step7Data ?? this.step7Data,
     );
   }
+
+  List<int> get doneStepList {
+    List<int> doneStepList = [];
+    if (travelType.isNotEmpty) doneStepList.add(1);
+    if (imageDataList.isNotEmpty) doneStepList.add(2);
+    if (step3Data.isFilled) doneStepList.add(3);
+    if (step4Data.isFilled) doneStepList.add(4);
+    if (step5Data.isFilled) doneStepList.add(5);
+    if (step6Data.isFilled) doneStepList.add(6);
+    if (step7Data.isFilled) doneStepList.add(7);
+    return doneStepList;
+  }
 }

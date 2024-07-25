@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/model/gallery/image_data.dart';
+import '../../../../domain/model/gallery/photo_data.dart';
 
 class SelectedImageView extends StatelessWidget {
-  final List<ImageData> selectedList;
-  final Function(ImageData) onTap;
+  final List<PhotoData> selectedList;
+  final Function(PhotoData) onTap;
 
   const SelectedImageView({
     super.key,
@@ -17,7 +18,7 @@ class SelectedImageView extends StatelessWidget {
     return ListView.builder(
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
-        final ImageData imageData = selectedList[index];
+        final PhotoData imageData = selectedList[index];
         return Padding(
           padding: const EdgeInsets.only(left: 6.0),
           child: SizedBox(
@@ -27,7 +28,7 @@ class SelectedImageView extends StatelessWidget {
                 Positioned(
                   bottom: 0,
                   child: Image.memory(
-                    imageData.thumbData!,
+                    imageData.thumbData,
                     fit: BoxFit.cover,
                     height: 50,
                     width: 50,

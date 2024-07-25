@@ -1,11 +1,17 @@
+import 'dart:io';
+
+import 'package:aikimwriter/presentation/screens/main/widget/story_grid_add_item.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../common/const/color.dart';
 import '../../../domain/bloc/bloc_event.dart';
 import '../../../domain/bloc/bloc_scaffold.dart';
+import '../../../domain/model/main/story_data.dart';
 import 'bloc/main_bloc.dart';
 import 'bloc/main_event.dart';
 import 'bloc/main_state.dart';
+import 'widget/story_dialog.dart';
 import 'widget/main_drawer.dart';
 
 class MainScreen extends StatelessWidget {
@@ -64,7 +70,7 @@ class MainScreen extends StatelessWidget {
               return StoryGridAddItem(
                 imagePath: index == 0
                     ? ''
-                    : state.storyDataList[index - 1].bookPageList.first,
+                    : state.storyDataList[index - 1].coverImagePath,
                 onTap: (index) async {
                   if (index == 0) {
                     bloc.add(BlocEvent(MainEvent.onAddStory));
@@ -76,6 +82,22 @@ class MainScreen extends StatelessWidget {
                   }
                 },
                 index: index,
+                onLongTap: (index) {
+                  if (index == 0) {
+                    return;
+                  }
+                  final storyData = state.storyDataList[index - 1];
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        return StoryDialog(
+                          storyData: storyData,
+                          onRemove: (data) {
+                            bloc.add(BlocEvent(MainEvent.onRemove, extra: data));
+                          },
+                        );
+                      });
+                },
               );
             },
             itemCount: state.storyDataList.length + 1,
@@ -84,71 +106,5 @@ class MainScreen extends StatelessWidget {
       },
     );
   }
-}
 
-class StoryGridAddItem extends StatelessWidget {
-  final int index;
-  final String imagePath;
-  final Function(int) onTap;
-
-  const StoryGridAddItem({
-    super.key,
-    required this.index,
-    required this.imagePath,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: InkWell(
-        onTap: () {
-          onTap(index);
-        },
-        child: imagePath.isEmpty ? getAddItem() : getImageItem(imagePath),
-      ),
-    );
-  }
-
-  Widget getAddItem() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Image.asset(
-          'assets/icons/ic_story_step_06.png',
-          width: 48,
-          height: 48,
-          color: Colors.grey[400],
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Add Story'.toUpperCase(),
-          style: TextStyle(
-            color: Colors.grey[400],
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget getImageItem(String imagePath) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.all(0.0),
-        child: Image.asset(
-          imagePath,
-          fit: BoxFit.fill,
-        ),
-      ),
-    );
-  }
 }

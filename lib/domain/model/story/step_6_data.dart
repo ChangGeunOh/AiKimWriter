@@ -17,5 +17,5 @@ class Step6Data {
     );
   }
 
-  bool get isValidate => coverImage.isNotEmpty && innerImage.isNotEmpty;
+  bool get isFilled => coverImage.isNotEmpty && innerImage.isNotEmpty;
 }

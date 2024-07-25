@@ -28,4 +28,5 @@ class Utils {
   static String getPercent(double number) {
     return '${NumberFormat('#,##0.0').format(number)}%';
   }
+
 }

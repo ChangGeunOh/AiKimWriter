@@ -3,6 +3,7 @@ import 'package:aikimwriter/domain/usecase/splash_case.dart';
 import 'package:aikimwriter/domain/usecase/use_cases.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'common/const/color.dart';
 import 'common/const/network.dart';
@@ -15,9 +16,36 @@ import 'data/datastore/datastore_source_impl.dart';
 import 'data/network/network_source_impl.dart';
 import 'data/repository/repository.dart';
 import 'domain/usecase/gallery_case.dart';
+import 'domain/usecase/story_case.dart';
+import 'package:http/http.dart' as http;
 
 Future<void> main() async {
+  await dotenv.load(fileName: '.env');
+  print('API_KEY: ${dotenv.env['GOOGLE_API_KEY']}');
   runApp(const MyApp());
+
+
+  Future<void> sendMultipartRequest() async {
+    final url = Uri.parse('https://team10-api.azurewebsites.net/api/travel/summary/pictures/async?code=C79kRLGqSxxEmjdevTpETK7HlMUfR7cayozj_ltFUyWMAzFupHr1-A%3D%3D');
+
+    var request = http.MultipartRequest('POST', url)
+      ..fields['desc'] = '{"meta":{"theme":"나홀로 여행","vibe":"","days":"2145/2146","dataType":"image"},"datas":[]}';
+    try {
+      final response = await request.send();
+      if (response.statusCode == 200) {
+        print('Request sent successfully');
+        final responseData = await http.Response.fromStream(response);
+        print('Response data: ${responseData.body}');
+      } else {
+        print('Failed to send request: ${response.statusCode}');
+        final responseData = await http.Response.fromStream(response);
+        print('Response data: ${responseData.body}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+  await sendMultipartRequest();
 }
 
 final rootScaffoldKey = GlobalKey<ScaffoldMessengerState>();
@@ -57,6 +85,7 @@ class MyApp extends StatelessWidget {
         return UseCases(
           splashCase: SplashCase(repository: repository),
           galleryCase: GalleryCase(repository: repository),
+          storyCase: StoryCase(repository: repository),
         );
       },
       child: MaterialApp.router(
@@ -142,4 +171,7 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+
+
+
 }

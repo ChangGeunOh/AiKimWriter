@@ -72,3 +72,4 @@ Future<void> setString(String key, String value) async {
     });
   }
 }
+

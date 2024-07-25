@@ -1,11 +1,12 @@
 class Step7Data {
   final String coverImage;
-  final List<String> innerImageList;
+  final String filePath;
 
   Step7Data({
-    this.coverImage = 'assets/images/img_cover_sample.png',
-    this.innerImageList = const ['assets/images/img_page_sample_01.png', 'assets/images/img_page_sample_02.png'],
+    this.coverImage = '',
+    this.filePath = '',
   });
 
-  get pageList => [coverImage, ...innerImageList];
+
+  bool get isFilled => filePath.isNotEmpty;
 }

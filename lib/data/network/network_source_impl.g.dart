@@ -48,6 +48,42 @@ class _NetworkSourceImpl implements NetworkSourceImpl {
     return _value;
   }
 
+  @override
+  Future<ImageSummaryResponse> postSummaryImage({
+    required List<MultipartFile> files,
+    required String desc,
+  }) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = FormData();
+    _data.files.addAll(files.map((i) => MapEntry('data', i)));
+    _data.fields.add(MapEntry(
+      'desc',
+      desc,
+    ));
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<ImageSummaryResponse>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+      contentType: 'multipart/form-data',
+    )
+            .compose(
+              _dio.options,
+              'https://team10-api.azurewebsites.net/api/travel/summary/pictures/async?code=C79kRLGqSxxEmjdevTpETK7HlMUfR7cayozj_ltFUyWMAzFupHr1-A%3D%3D',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final _value = ImageSummaryResponse.fromJson(_result.data!);
+    return _value;
+  }
+
   RequestOptions _setStreamType<T>(RequestOptions requestOptions) {
     if (T != dynamic &&
         !(requestOptions.responseType == ResponseType.bytes ||

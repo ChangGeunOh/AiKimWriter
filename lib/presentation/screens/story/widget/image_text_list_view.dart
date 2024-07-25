@@ -5,12 +5,13 @@ import '../../../../domain/model/story/book_type.dart';
 class ImageTextListView extends StatefulWidget {
   final String title;
   final Function(BookType) onTapBookType;
-
+  final BookType? bookType;
   final List<BookType> bookTypeList;
 
   const ImageTextListView({
     super.key,
     required this.title,
+    required this.bookType,
     required this.onTapBookType,
     required this.bookTypeList,
   });
@@ -22,6 +23,12 @@ class ImageTextListView extends StatefulWidget {
 class _ImageTextListViewState extends State<ImageTextListView> {
 
   BookType? _bookType;
+
+  @override
+  void initState() {
+    _bookType = widget.bookType;
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
